@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Humanit Client API</title>
+    <style>
+        :root {
+            color-scheme: light;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            color: #1f2937;
+            background: #f3f6fa;
+        }
+
+        body {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 2rem 1.25rem 4rem;
+            line-height: 1.6;
+        }
+
+        main {
+            padding: 2rem;
+            background: #fff;
+            border: 1px solid #dbe2ea;
+            border-radius: 12px;
+            box-shadow: 0 8px 28px rgb(15 23 42 / 6%);
+        }
+
+        h1, h2 {
+            line-height: 1.25;
+            color: #12243a;
+        }
+
+        h2 {
+            margin-top: 2.25rem;
+            padding-bottom: 0.4rem;
+            border-bottom: 1px solid #e5eaf0;
+        }
+
+        a {
+            color: #0759a5;
+        }
+
+        code, pre {
+            font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+        }
+
+        code {
+            overflow-wrap: anywhere;
+        }
+
+        pre {
+            overflow-x: auto;
+            padding: 1rem;
+            background: #f3f6fa;
+            border-radius: 8px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+
+        th, td {
+            padding: 0.65rem 0.75rem;
+            text-align: left;
+            border: 1px solid #dbe2ea;
+        }
+
+        th {
+            background: #f3f6fa;
+        }
+
+        @media (max-width: 640px) {
+            body {
+                padding: 1rem 0.75rem 2rem;
+            }
+
+            main {
+                padding: 1.25rem;
+            }
+
+            table {
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<main>
+    <h1>Humanit Client API</h1>
+
+    <p>Humanit is a Spring Boot REST API for managing clients and the documents associated with them. It supports creating, listing, retrieving, updating, and deleting clients.</p>
+
+    <h2>Run the application</h2>
+    <p>From the project root, run:</p>
+    <pre><code>./gradlew bootRun</code></pre>
+    <p>The server listens on <a href="http://localhost:8080">http://localhost:8080</a> by default.</p>
+    <p>The API does not currently require authentication.</p>
+
+    <h3>Run with Docker</h3>
+    <p>Install Docker with Docker Compose, then run this command from the project root:</p>
+    <pre><code>docker compose up --build</code></pre>
+    <p>Compose builds the application image from the <code>Dockerfile</code> and starts the API on port <code>8080</code>. Open <a href="http://localhost:8080">http://localhost:8080</a> when the container is running. To run it in the background, use <code>docker compose up --build -d</code>; view its output with <code>docker compose logs -f humanit</code>, and stop and remove the container with <code>docker compose down</code>.</p>
+    <p>The database is in-memory, so its contents are reset when the container is stopped and started again. The image build runs the Gradle <code>bootJar</code> task inside a Java 25 build image; a local Gradle build is not required.</p>
+
+    <h2>API endpoints</h2>
+    <p>All client endpoints are under <code>/clients</code>.</p>
+    <table>
+        <thead>
+        <tr>
+            <th>Method</th>
+            <th>Path</th>
+            <th>Purpose</th>
+            <th>Success response</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr><td><code>GET</code></td><td><code>/clients</code></td><td>List all clients</td><td><code>200 OK</code></td></tr>
+        <tr><td><code>GET</code></td><td><code>/clients/{id}</code></td><td>Get a client by ID</td><td><code>200 OK</code>; <code>404 Not Found</code> if missing</td></tr>
+        <tr><td><code>POST</code></td><td><code>/clients</code></td><td>Create a client</td><td><code>201 Created</code> with the new client</td></tr>
+        <tr><td><code>PUT</code></td><td><code>/clients/{id}</code></td><td>Replace a client's fields and documents</td><td><code>200 OK</code>; <code>404 Not Found</code> if missing</td></tr>
+        <tr><td><code>DELETE</code></td><td><code>/clients/{id}</code></td><td>Delete a client</td><td><code>204 No Content</code>; <code>404 Not Found</code> if missing</td></tr>
+        </tbody>
+    </table>
+
+    <h2>Swagger / OpenAPI</h2>
+    <p>Open the interactive Swagger UI at <a href="http://localhost:8080/swagger-ui/index.html">http://localhost:8080/swagger-ui/index.html</a>.</p>
+    <p>Swagger UI lets you inspect the available operations, view their request and response formats, and try API calls. The OpenAPI definition is available at <a href="http://localhost:8080/v3/api-docs">http://localhost:8080/v3/api-docs</a></p>
+
+    <h2>H2 database console</h2>
+    <p>The H2 web console is enabled at <a href="http://localhost:8080/h2-console">http://localhost:8080/h2-console</a>.</p>
+    <p>It is a developer tool for connecting to the application's database, running SQL, and viewing or editing tables and data. Use these JDBC connection settings:</p>
+    <table>
+        <thead>
+        <tr><th>Setting</th><th>Value</th></tr>
+        </thead>
+        <tbody>
+        <tr><td>JDBC URL</td><td><code>jdbc:h2:mem:clientsdb</code></td></tr>
+        <tr><td>User name</td><td><code>sa</code></td></tr>
+        <tr><td>Password</td><td>(blank)</td></tr>
+        </tbody>
+    </table>
+    <p>The H2 console is for local development only.</p>
+
+    <h2>Database lifecycle and scripts</h2>
+    <p>The application uses an in-memory H2 database. It is created when the application starts and is lost when the application shuts down; it is not a persistent database.</p>
+    <p>Database initialization is configured in <code>src/main/resources/application.properties</code>. SQL initialization runs at startup, and Hibernate schema generation is disabled:</p>
+    <ul>
+        <li><code>src/main/resources/schema.sql</code> creates the <code>client</code> and <code>document</code> tables, including their primary key and foreign key relationship.</li>
+        <li><code>src/main/resources/data.sql</code> inserts example clients and documents.</li>
+    </ul>
+    <p>These scripts run on every application startup, so the in-memory database starts with the schema and sample data each time. Changes made through the API or H2 console exist only for the current application run.</p>
+</main>
+</body>
+</html>
