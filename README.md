@@ -12,8 +12,6 @@ From the project root, run:
 
 The server listens on `http://localhost:8080` by default.
 
-Account registration and sign-in are public. All client endpoints require a JWT bearer token in the `Authorization` header.
-
 ### Run with Docker
 
 Install Docker with Docker Compose, then run from the project root:
@@ -22,21 +20,17 @@ Install Docker with Docker Compose, then run from the project root:
 docker compose up --build
 ```
 
-Compose builds the application image from the `Dockerfile` and starts the API on port `8080`. Open <http://localhost:8080> when the container is running. To run it in the background, use `docker compose up --build -d`; view its output with `docker compose logs -f humanit`, and stop and remove the container with `docker compose down`.
+Compose builds the application image from the `Dockerfile` and starts the API on port `8080`. 
 
-The database is in-memory, so its contents are reset when the container is stopped and started again. The image build runs the Gradle `bootJar` task inside a Java 25 build image; a local Gradle build is not required.
+The database is in-memory, so its contents are reset when the container is stopped and started again. 
 
 ## API endpoints
 
 Register with `POST /auth/register` using an email and a password of at least 12 characters. Then call `POST /auth/login` with the same credentials to receive an access token:
 
-```json
-{"email":"person@example.com","password":"secure-password-123"}
-```
-
 Use the returned token on client requests as `Authorization: Bearer <accessToken>`. Tokens expire after one hour by default.
 
-The interactive API documentation is available without a bearer token for development. The H2 console, like client endpoints, requires a bearer token.
+The interactive API documentation is available without a bearer token for development.
 
 All client endpoints are under `/clients`.
 
