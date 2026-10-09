@@ -17,8 +17,6 @@ public class ClientService {
         this.clientRepository = clientRepository;
     }
 
-    // @Transactional: client AND its documents are persisted in a single
-    // transaction - either everything commits, or nothing does (atomicity).
     @Transactional
     public Client create(Client client) {
         return clientRepository.save(client);
@@ -42,8 +40,6 @@ public class ClientService {
         existing.setTaxIdentifier(updated.getTaxIdentifier());
         existing.setEmail(updated.getEmail());
         existing.setPhoneNumber(updated.getPhoneNumber());
-        // Synchronize documents inside the same transaction: orphanRemoval=true
-        // deletes removed documents, CascadeType.ALL inserts the new ones.
         existing.setDocuments(updated.getDocuments());
         return clientRepository.save(existing);
     }

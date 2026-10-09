@@ -12,7 +12,7 @@ From the project root, run:
 
 The server listens on `http://localhost:8080` by default.
 
-The API does not currently require authentication.
+Account registration and sign-in are public. All client endpoints require a JWT bearer token in the `Authorization` header.
 
 ### Run with Docker
 
@@ -28,6 +28,16 @@ The database is in-memory, so its contents are reset when the container is stopp
 
 ## API endpoints
 
+Register with `POST /auth/register` using an email and a password of at least 12 characters. Then call `POST /auth/login` with the same credentials to receive an access token:
+
+```json
+{"email":"person@example.com","password":"secure-password-123"}
+```
+
+Use the returned token on client requests as `Authorization: Bearer <accessToken>`. Tokens expire after one hour by default.
+
+The interactive API documentation is available without a bearer token for development. The H2 console, like client endpoints, requires a bearer token.
+
 All client endpoints are under `/clients`.
 
 | Method | Path | Purpose | Success response |
@@ -39,7 +49,7 @@ All client endpoints are under `/clients`.
 | `DELETE` | `/clients/{id}` | Delete a client | `204 No Content`; `404 Not Found` if missing |
 
 ```bash
-curl http://localhost:8080/clients
+curl -H "Authorization: Bearer <accessToken>" http://localhost:8080/clients
 ```
 
 ## Swagger / OpenAPI

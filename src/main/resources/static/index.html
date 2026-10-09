@@ -98,7 +98,7 @@
     <p>From the project root, run:</p>
     <pre><code>./gradlew bootRun</code></pre>
     <p>The server listens on <a href="http://localhost:8080">http://localhost:8080</a> by default.</p>
-    <p>The API does not currently require authentication.</p>
+    <p>Account registration and sign-in are public. All client endpoints require a JWT bearer token in the <code>Authorization</code> header.</p>
 
     <h3>Run with Docker</h3>
     <p>Install Docker with Docker Compose, then run this command from the project root:</p>
@@ -107,6 +107,10 @@
     <p>The database is in-memory, so its contents are reset when the container is stopped and started again. The image build runs the Gradle <code>bootJar</code> task inside a Java 25 build image; a local Gradle build is not required.</p>
 
     <h2>API endpoints</h2>
+    <p>Register with <code>POST /auth/register</code> using an email and a password of at least 12 characters. Then call <code>POST /auth/login</code> with the same credentials to receive an access token:</p>
+    <pre><code>{"email":"person@example.com","password":"secure-password-123"}</code></pre>
+    <p>Use the returned token on client requests as <code>Authorization: Bearer &lt;accessToken&gt;</code>. Tokens expire after one hour by default.</p>
+    <p>The interactive API documentation and H2 console remain available without a bearer token for development.</p>
     <p>All client endpoints are under <code>/clients</code>.</p>
     <table>
         <thead>

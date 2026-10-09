@@ -3,6 +3,7 @@ package com.example.humanit.controller;
 import com.example.humanit.dto.ClientDto;
 import com.example.humanit.model.Client;
 import com.example.humanit.service.ClientService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +20,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/clients")
+@SecurityRequirement(name = "bearerAuth")
 public class ClientController {
 
     private final ClientService clientService;

@@ -15,3 +15,9 @@ CREATE TABLE document (
     client_id       BIGINT NOT NULL,
     CONSTRAINT fk_document_client FOREIGN KEY (client_id) REFERENCES client (id) ON DELETE CASCADE
 );
+
+CREATE TABLE app_user (
+    id            BIGINT AUTO_INCREMENT PRIMARY KEY,
+    email         VARCHAR(254) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL
+);

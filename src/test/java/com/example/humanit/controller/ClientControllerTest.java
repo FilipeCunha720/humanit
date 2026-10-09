@@ -2,11 +2,14 @@ package com.example.humanit.controller;
 
 import com.example.humanit.exception.ClientNotFoundException;
 import com.example.humanit.model.Client;
+import com.example.humanit.service.AuthService;
 import com.example.humanit.service.ClientService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -20,10 +23,12 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(ClientController.class)
+@SpringBootTest(properties = "spring.datasource.url=jdbc:h2:mem:client-controller-test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE")
+@AutoConfigureMockMvc
 class ClientControllerTest {
 
     @Autowired
@@ -31,6 +36,12 @@ class ClientControllerTest {
 
     @MockitoBean
     private ClientService clientService;
+
+    @MockitoBean
+    private AuthService authService;
+
+    @MockitoBean
+    private JwtDecoder jwtDecoder;
 
     private static final String VALID_BODY =
             "{\"firstName\": \"John\", \"lastName\": \"Doe\", "
@@ -45,7 +56,8 @@ class ClientControllerTest {
         when(clientService.create(any(Client.class))).thenReturn(saved);
 
         mockMvc.perform(post("/clients")
-                        .contentType(MediaType.APPLICATION_JSON)
+                .with(jwt())
+                .contentType(MediaType.APPLICATION_JSON)
                         .content(VALID_BODY))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(1))
@@ -55,7 +67,8 @@ class ClientControllerTest {
     @Test
     void create_returns400WhenInvalid() throws Exception {
         mockMvc.perform(post("/clients")
-                        .contentType(MediaType.APPLICATION_JSON)
+                .with(jwt())
+                .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"firstName\": \"\", \"email\": \"not-an-email\"}"))
                 .andExpect(status().isBadRequest());
     }
@@ -66,7 +79,7 @@ class ClientControllerTest {
         c.setId(2L);
         when(clientService.findAll()).thenReturn(List.of(c));
 
-        mockMvc.perform(get("/clients"))
+        mockMvc.perform(get("/clients").with(jwt()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(2))
                 .andExpect(jsonPath("$[0].lastName").value("Smith"));
@@ -78,7 +91,7 @@ class ClientControllerTest {
         c.setId(2L);
         when(clientService.findById(2L)).thenReturn(c);
 
-        mockMvc.perform(get("/clients/2"))
+        mockMvc.perform(get("/clients/2").with(jwt()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.email").value("jane@example.com"));
     }
@@ -87,7 +100,7 @@ class ClientControllerTest {
     void getById_returns404WhenMissing() throws Exception {
         when(clientService.findById(99L)).thenThrow(new ClientNotFoundException(99L));
 
-        mockMvc.perform(get("/clients/99"))
+        mockMvc.perform(get("/clients/99").with(jwt()))
                 .andExpect(status().isNotFound());
     }
 
@@ -98,7 +111,8 @@ class ClientControllerTest {
         when(clientService.update(any(Long.class), any(Client.class))).thenReturn(updated);
 
         mockMvc.perform(put("/clients/1")
-                        .contentType(MediaType.APPLICATION_JSON)
+                .with(jwt())
+                .contentType(MediaType.APPLICATION_JSON)
                         .content(VALID_BODY))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.firstName").value("Johnny"));
@@ -108,7 +122,7 @@ class ClientControllerTest {
     void delete_returns204() throws Exception {
         doNothing().when(clientService).delete(1L);
 
-        mockMvc.perform(delete("/clients/1"))
+        mockMvc.perform(delete("/clients/1").with(jwt()))
                 .andExpect(status().isNoContent());
     }
 
@@ -116,7 +130,13 @@ class ClientControllerTest {
     void delete_returns404WhenMissing() throws Exception {
         doThrow(new ClientNotFoundException(7L)).when(clientService).delete(7L);
 
-        mockMvc.perform(delete("/clients/7"))
+        mockMvc.perform(delete("/clients/7").with(jwt()))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void getAll_requiresAuthentication() throws Exception {
+        mockMvc.perform(get("/clients"))
+                .andExpect(status().isUnauthorized());
     }
 }
